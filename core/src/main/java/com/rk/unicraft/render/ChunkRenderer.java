@@ -21,7 +21,7 @@ public class ChunkRenderer extends Renderer<List<ChunkModel>> {
 
     @Override
     public int render(List<ChunkModel> targets) {
-        int count = 0;
+      //  int count = 0;
 
         modelBatch.begin(camera);
 
@@ -31,20 +31,21 @@ public class ChunkRenderer extends Renderer<List<ChunkModel>> {
 
             if (isVisible(fl)) {
                 modelBatch.render(fl, environment);
-                ++count;
+               // ++count;
             }
 
             if (tr != null) {
                 if (isVisible(tr)) {
                     modelBatch.render(tr, environment);
-                    ++count;
+                   // ++count;
                 }
             }
         }
 
         modelBatch.end();
 
-        return count;
+       // return count;
+        return 0;
     }
 
     @Override

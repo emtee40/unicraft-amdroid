@@ -30,6 +30,7 @@ public class World {
     private Lock chunkLock;
     private SimpleVector2 playerChunkPos;
     private Lock playerPosLock;
+    private List<ChunkModel> chunks;
 
     private static World world;
 
@@ -43,6 +44,7 @@ public class World {
         viewDistance = 8;
         cbg = new ChunkBackgroundGenerator(loadedChunks, chunkLock, playerChunkPos, playerPosLock, viewDistance, mapGenerator);
         cbg.start();
+        chunks = new LinkedList<>();
     }
 
     public synchronized static World getInstance() {
@@ -51,6 +53,7 @@ public class World {
 
     public static World init(int seed) {
         world = new World(seed);
+       
         return world;
     }
 
@@ -78,22 +81,18 @@ public class World {
     private final SimpleVector2 tmpPlayerPos = new SimpleVector2();
 
     public List<ChunkModel> getModels(){
-        List<ChunkModel> chunks = new LinkedList<>();
-
+        chunks.clear();
         player.getChunkPosition(tmpPlayerPos);
-
         playerPosLock.lock();
         playerChunkPos.set(tmpPlayerPos);
         playerPosLock.unlock();
-
         chunkLock.lock();
+        ChunkModel tmpModel;
         for (Chunk chunk : loadedChunks.values()) {
             if(!chunkModels.containsKey(chunk)) { //Wenn model nicht geladen, model erzeugen
                 chunkModels.put(chunk,new ChunkModel(chunk));
             }
-            ChunkModel tmpModel = chunkModels.get(chunk);
-
-            //Wenn chunk in viewDistance
+             tmpModel = chunkModels.get(chunk);
             if(Math.abs(tmpPlayerPos.x - chunk.getX()) <= viewDistance && Math.abs(tmpPlayerPos.y - chunk.getZ()) <= viewDistance)
                 chunks.add(tmpModel);
         }

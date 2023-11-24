@@ -18,6 +18,9 @@ public class MainActivity extends AndroidApplication {
         
 		AndroidApplicationConfiguration configuration = new AndroidApplicationConfiguration();
 		configuration.useImmersiveMode = true;
+        configuration.maxNetThreads = 500;
+        configuration.useWakelock = true;
+        
 		initialize(new com.rk.unicraft.Minecraft(), configuration);
 	}
 }

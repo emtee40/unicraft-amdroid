@@ -14,7 +14,8 @@ public class MapGenerator {
     private int seed;
     private final BiomeGenerator biomeGenerator;
     private final XoRoShiRo128PlusPlusRandom random;
-
+    //private final int CHUNK_HEIGHT = 50;
+    // this may cause world genration issue
     private static final int WATER_HEIGHT = 58;
 
     private final TreeGenerator treeGen;
@@ -45,6 +46,7 @@ public class MapGenerator {
      * bsp. realX = chunkX * CHUNK_SIZE + chunk_intern
      */
     public Block[][][] generateChunk(int chunkX, int chunkZ) {
+        //Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
         Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
         int y;
 
@@ -66,7 +68,11 @@ public class MapGenerator {
 
                 //Abflachung
                 y = smooth(realX, realZ);
-
+                //most important
+                
+                
+                
+                
                 //Zweite Schicht 2 Blöcke hoch
                 int tmp = currentBiome.getSurfaceBlockType(y);
                 if(tmp != 0)

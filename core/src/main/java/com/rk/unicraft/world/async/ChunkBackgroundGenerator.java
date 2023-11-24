@@ -78,9 +78,10 @@ public class ChunkBackgroundGenerator extends Thread {
                 chunkLock.unlock();
 
                 if (existsNot) { //Nicht geladen
-                    Chunk c = new Chunk(mg, i, j);
+                    //Chunk c = new Chunk(mg, i, j)
                     chunkLock.lock();
-                    loadedChunks.put(new SimpleVector2(i, j), c);
+                    //loadedChunks.put(new SimpleVector2(i, j), c);
+                    loadedChunks.put(tmp, new Chunk(mg, i, j));
                     chunkLock.unlock();
                 }
             }
