@@ -16,7 +16,7 @@ public class SimpleVector2 {
     /*Addiert dx und dy
     * Gibt sich selbst zurück (chaining)
     */
-    public final SimpleVector2 add(int dx, int dy){
+    public SimpleVector2 add(int dx, int dy){
         x += dx;
         y += dy;
         return this;

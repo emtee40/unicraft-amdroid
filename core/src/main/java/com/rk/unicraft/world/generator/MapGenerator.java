@@ -9,14 +9,13 @@ import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 
 import static com.rk.unicraft.world.chunk.Chunk.CHUNK_HEIGHT;
 import static com.rk.unicraft.world.chunk.Chunk.CHUNK_SIZE;
-
+import static com.rk.unicraft.world.chunk.Chunk.WATER_HEIGHT;
 public class MapGenerator {
     private int seed;
     private final BiomeGenerator biomeGenerator;
     private final XoRoShiRo128PlusPlusRandom random;
-    //private final int CHUNK_HEIGHT = 50;
-    // this may cause world genration issue
-    private static final int WATER_HEIGHT = 58;
+
+    
 
     private final TreeGenerator treeGen;
 
@@ -46,7 +45,6 @@ public class MapGenerator {
      * bsp. realX = chunkX * CHUNK_SIZE + chunk_intern
      */
     public Block[][][] generateChunk(int chunkX, int chunkZ) {
-        //Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
         Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
         int y;
 
@@ -68,11 +66,7 @@ public class MapGenerator {
 
                 //Abflachung
                 y = smooth(realX, realZ);
-                //most important
-                
-                
-                
-                
+
                 //Zweite Schicht 2 Blöcke hoch
                 int tmp = currentBiome.getSurfaceBlockType(y);
                 if(tmp != 0)
@@ -154,7 +148,7 @@ public class MapGenerator {
                 interp[21] + interp[22] + interp[23] +
                 interp[24];
 
-        return y / 25;
+        return y / 50;
     }
 
     private int getHeight(int realX, int realZ) {
