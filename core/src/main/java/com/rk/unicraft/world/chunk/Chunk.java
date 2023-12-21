@@ -24,10 +24,8 @@ public class Chunk {
     private boolean transparentMeshNeedsUpdate;
 
     public static final int CHUNK_SIZE = 16;
-    public static final int CHUNK_HEIGHT = 64;
-    public static final int WATER_HEIGHT = 29;
-    
-    
+    public static final int CHUNK_HEIGHT = 128;
+
     public Chunk(MapGenerator mg, int x, int z) {
         blocks = new Block[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
         blockList = new LinkedList<>();
