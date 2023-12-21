@@ -14,7 +14,7 @@ public abstract class Renderer<T> {
     }
 
     /*Gibt anzahl der gerenderten Objekte zurück*/
-    public abstract int render(T targets);
+    //public abstract int render(T targets);
 
     public abstract void cleanup();
 

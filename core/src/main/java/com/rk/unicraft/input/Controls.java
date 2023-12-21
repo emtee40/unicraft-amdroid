@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -39,14 +39,14 @@ public class Controls implements InputProcessor {
         Gdx.app.log("controls", "first button resgister");
 
         // forward button
-        ImageButton button_F = new ImageButton(mySkin);
+        Button button_F = new Button(mySkin);
         button_F.setSize(100, 100);
-        button_F.getStyle().imageUp =
+        /* button_F.getStyle().imageUp =
                 new TextureRegionDrawable(
                         new TextureRegion(new Texture(Gdx.files.internal("raw/dirt.png"))));
         button_F.getStyle().imageDown =
                 new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/armor.png"))));
+                        new TextureRegion(new Texture(Gdx.files.internal("raw/armor.png"))));*/
 
         button_F.addListener(
                 new InputListener() {
@@ -66,14 +66,8 @@ public class Controls implements InputProcessor {
                     }
                 });
         // backward button
-        ImageButton button_B = new ImageButton(mySkin);
+        Button button_B = new Button(mySkin);
         button_B.setSize(100, 100);
-        button_B.getStyle().imageUp =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/dirt.png"))));
-        button_B.getStyle().imageDown =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/armor.png"))));
 
         button_B.addListener(
                 new InputListener() {
@@ -93,15 +87,8 @@ public class Controls implements InputProcessor {
                     }
                 });
         // left button
-        ImageButton button_L = new ImageButton(mySkin);
+        Button button_L = new Button(mySkin);
         button_L.setSize(100, 100);
-        button_L.getStyle().imageUp =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/dirt.png"))));
-        button_L.getStyle().imageDown =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/armor.png"))));
-
         button_L.addListener(
                 new InputListener() {
 
@@ -121,15 +108,8 @@ public class Controls implements InputProcessor {
                 });
 
         // right button
-        ImageButton button_R = new ImageButton(mySkin);
+        Button button_R = new Button(mySkin);
         button_R.setSize(100, 100);
-        button_R.getStyle().imageUp =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/dirt.png"))));
-        button_R.getStyle().imageDown =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/armor.png"))));
-
         button_R.addListener(
                 new InputListener() {
 
@@ -148,14 +128,8 @@ public class Controls implements InputProcessor {
                     }
                 });
         // up
-        ImageButton button_U = new ImageButton(mySkin);
+        Button button_U = new Button(mySkin);
         button_U.setSize(100, 100);
-        button_U.getStyle().imageUp =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/dirt.png"))));
-        button_U.getStyle().imageDown =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/armor.png"))));
 
         button_U.addListener(
                 new InputListener() {
@@ -164,8 +138,9 @@ public class Controls implements InputProcessor {
                     public boolean touchDown(
                             InputEvent event, float x, float y, int pointer, int button) {
                         // outputLabel.setText("Pressed Image Button");
-
-                        player.movingDown = true;
+                        player.movingUp = true;
+                        player.jumpPressed = true;
+                        // player.movingDown = true;
                         return true;
                     }
 
@@ -173,19 +148,14 @@ public class Controls implements InputProcessor {
                     public void touchUp(
                             InputEvent event, float x, float y, int pointer, int button) {
 
-                        player.movingDown = false;
+                        player.movingUp = false;
+                        player.jumpPressed = false;
+                        // player.movingDown = false;
                     }
                 });
         // down
-        ImageButton button_D = new ImageButton(mySkin);
+        Button button_D = new Button(mySkin);
         button_D.setSize(100, 100);
-        button_D.getStyle().imageUp =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/dirt.png"))));
-        button_D.getStyle().imageDown =
-                new TextureRegionDrawable(
-                        new TextureRegion(new Texture(Gdx.files.internal("raw/armor.png"))));
-
         button_D.addListener(
                 new InputListener() {
 
@@ -193,18 +163,45 @@ public class Controls implements InputProcessor {
                     public boolean touchDown(
                             InputEvent event, float x, float y, int pointer, int button) {
                         // outputLabel.setText("Pressed Image Button");
-                        player.movingUp = true;
-                        player.jumpPressed = true;
+
+                        //    RuntimeConfig.RENDER_MODE_SWITCH =
+                        //  ++RuntimeConfig.RENDER_MODE_SWITCH % RuntimeConfig.RENDER_MODES.length;
+
                         return true;
                     }
 
                     @Override
                     public void touchUp(
                             InputEvent event, float x, float y, int pointer, int button) {
-                        player.movingUp = false;
-                        player.jumpPressed = false;
+                        player.isFlying = !player.isFlying;
                     }
                 });
+        
+        Button button_V = new Button(mySkin);
+        button_V.setSize(100, 100);
+        button_V.addListener(
+                new InputListener() {
+
+                    @Override
+                    public boolean touchDown(
+                            InputEvent event, float x, float y, int pointer, int button) {
+                        // outputLabel.setText("Pressed Image Button");
+
+                        RuntimeConfig.RENDER_MODE_SWITCH =
+                      ++RuntimeConfig.RENDER_MODE_SWITCH % RuntimeConfig.RENDER_MODES.length;
+
+                        return true;
+                    }
+
+                    @Override
+                    public void touchUp(
+                            InputEvent event, float x, float y, int pointer, int button) {
+                        
+                    }
+                });
+        
+        
+        
 
         button_F.setPosition(Utils.percent(screen_width, 10), Utils.percent(screen_height, 45));
         button_B.setPosition(
@@ -217,15 +214,10 @@ public class Controls implements InputProcessor {
         button_L.setPosition(Utils.percent(screen_width, 2), middleY);
         button_R.setPosition(Utils.percent(screen_width, 18), middleY);
 
-        button_U.setPosition(Utils.percent(screen_width, 87), Utils.percent(screen_height, 20));
-        button_D.setPosition(Utils.percent(screen_width, 87), Utils.percent(screen_height, 40));
+        button_U.setPosition(Utils.percent(screen_width, 87), Utils.percent(screen_height, 40));
+        button_D.setPosition(Utils.percent(screen_width, 87), Utils.percent(screen_height, 20));
 
-        button_F.setTouchable(Touchable.enabled);
-        button_B.setTouchable(Touchable.enabled);
-        button_L.setTouchable(Touchable.enabled);
-        button_R.setTouchable(Touchable.enabled);
-        button_U.setTouchable(Touchable.enabled);
-        button_D.setTouchable(Touchable.enabled);
+        button_V.setPosition(Utils.percent(screen_width,87),Utils.percent(screen_height,60));
 
         stage.addActor(button_F);
         stage.addActor(button_B);
@@ -233,6 +225,7 @@ public class Controls implements InputProcessor {
         stage.addActor(button_R);
         stage.addActor(button_U);
         stage.addActor(button_D);
+        stage.addActor(button_V);
 
         /*
         button_U is actually down button
@@ -244,7 +237,6 @@ public class Controls implements InputProcessor {
     public void render() {
         stage.act();
         stage.draw();
-        
     }
 
     private int lastCursorX = Gdx.graphics.getWidth() / 2;

@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.rk.unicraft.config.RuntimeConfig;
 import com.rk.unicraft.entity.Player;
-import com.rk.unicraft.render.ChunkRenderer;
+
 import com.rk.unicraft.ui.DebugScreen;
 import com.rk.unicraft.ui.HUD;
 import com.rk.unicraft.ui.Hotbar;
@@ -31,7 +31,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import com.rk.unicraft.input.Controls;
 import java.util.concurrent.*;
-
+import java.util.LinkedList;
 public class Minecraft implements ApplicationListener {
 
     private Player player;
@@ -39,9 +39,9 @@ public class Minecraft implements ApplicationListener {
     private DebugScreen debugScreen;
     private Hotbar hotbar;
     private World world;
-    private ChunkRenderer chunkRenderer;
+    
     private Controls controls;
-   // private SpriteBatch batch;
+  
     private Texture skyTexture;
     private Sprite skySprite;
     private boolean thread_started = false;
@@ -61,13 +61,13 @@ public class Minecraft implements ApplicationListener {
         screen_width = Gdx.graphics.getWidth();
 
         Environment environment = new Environment();
-        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.51f, 0.5f, 0.5f, 1f));
+        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.61f, 0.6f, 0.6f, 0.8f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
 
        //ModelBatch modelBatch = new ModelBatch();
-        chunkRenderer = new ChunkRenderer(new ModelBatch(), environment, cam);
+        //chunkRenderer = new World(new ModelBatch(), environment, cam);
 
-        world = World.init((int) TimeUtils.millis());
+        world = World.init(new ModelBatch(), environment, cam,(int) TimeUtils.millis());
         player = new Player(cam);
         world.setPlayer(player);
         hud = new HUD(player);
@@ -80,7 +80,7 @@ public class Minecraft implements ApplicationListener {
         multiplexer.addProcessor(controls);
         Gdx.input.setInputProcessor(multiplexer);
 
-        sky = new Sky(cam);
+       // sky = new Sky(cam);
 
         
     }
@@ -98,7 +98,7 @@ public class Minecraft implements ApplicationListener {
     public void render() {
         Gdx.gl.glViewport(0, 0, screen_width, screen_height);
         // Set the clear color to a light blue (sky color)
-        //Gdx.gl.glClearColor(0, 0, 0, 1f);
+        Gdx.gl.glClearColor(0.5f,0.7f ,0.9f, 1f);
         Gdx.gl.glClear(
                 GL20.GL_COLOR_BUFFER_BIT
                         | GL20.GL_DEPTH_BUFFER_BIT
@@ -110,15 +110,20 @@ public class Minecraft implements ApplicationListener {
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
         Gdx.gl.glCullFace(GL20.GL_FRONT);
 
-        sky.render();
+        //sky.render();
 
         player.update();
 
         // List<ChunkModel> chunksToRender = world.getModels();
-
+        
+        
+        
+        
+        
         // render World
         // int visibleChunks =
-        chunkRenderer.render(world.getModels());
+        
+        world.render();
 
         // render HUD
         hotbar.setSelectedIndex(player.getSelectedIndex());
@@ -137,11 +142,11 @@ public class Minecraft implements ApplicationListener {
 
     @Override
     public void dispose() {
-        chunkRenderer.cleanup();
+        
         world.cleanUp();
         hud.dispose();
         controls.clear();
-        sky.clear();
+       //@ sky.clear();
         System.gc();
     }
 

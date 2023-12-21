@@ -39,9 +39,9 @@ public class Player {
     public boolean canAttack;
     public boolean isPlacing;
 
-    private final float WALK_SPEED = 0.13f;
+    private final float WALK_SPEED = 0.15f;
     private final float JUMP_POWER = 30;
-    private final float GRAVITY = -10;
+    private final float GRAVITY = -20;
     private final float EYE_HEIGHT = 1.7f;
     private final float HIT_DISTANCE = 6;
     private final float HIT_DISTANCE2 = HIT_DISTANCE * HIT_DISTANCE;
