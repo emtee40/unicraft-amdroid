@@ -1,37 +1,35 @@
 package com.rk.unicraft.world;
 
+import com.badlogic.gdx.utils.Collections;
 import com.rk.unicraft.entity.Player;
 import com.rk.unicraft.render.Renderer;
 import com.rk.unicraft.util.MathHelper;
-import com.badlogic.gdx.math.Vector2;
 import com.rk.unicraft.util.SimpleVector2;
 import com.rk.unicraft.world.async.ChunkLoader;
-import com.rk.unicraft.world.GameObject;
 import com.rk.unicraft.world.async.ChunkLoader;
 import com.rk.unicraft.world.chunk.ChunkModel;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import java.util.List;
+import com.badlogic.gdx.Gdx;
+import java.util.concurrent.TimeUnit;
 import com.rk.unicraft.world.block.Block;
 import com.rk.unicraft.world.chunk.Chunk;
 import com.rk.unicraft.world.chunk.ChunkModel;
-import com.rk.unicraft.world.generator.MapGenerator;
 import com.badlogic.gdx.math.Vector3;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.rk.unicraft.world.chunk.Chunk.CHUNK_SIZE;
 
-
 @SuppressWarnings("unused")
-public class World extends Renderer<List<ChunkModel>>{
+public class World extends Renderer<List<ChunkModel>> {
     // init
     private static World world;
     private int viewDistance; // In chunks
@@ -39,12 +37,17 @@ public class World extends Renderer<List<ChunkModel>>{
 
     private ChunkLoader chunkloader;
     public static Lock chunkLock;
-    private SimpleVector2 playerChunkPos;
+    // private SimpleVector2 playerChunkPos;
     public List<ChunkModel> chunks;
     private HashMap<SimpleVector2, Chunk> loadedChunks;
     private HashMap<Chunk, ChunkModel> chunkModels;
     private final ModelBatch modelBatch;
     private final Environment environment;
+    private final SimpleVector2 tmpPlayerPos = new SimpleVector2();
+    private boolean islogged = false;
+    GameObject fl,tr;
+
+    // int FPSitrator = 0;
 
     public World(ModelBatch modelBatch, Environment environment, Camera camera, int seed) {
         super(camera);
@@ -53,10 +56,11 @@ public class World extends Renderer<List<ChunkModel>>{
         loadedChunks = new HashMap<>();
         chunkModels = new HashMap<>();
         chunkLock = new ReentrantLock();
-        playerChunkPos = new SimpleVector2();
-        viewDistance = 2;
+        // playerChunkPos = tmpPlayerPos;
+        viewDistance = 4;
         chunks = new LinkedList<>();
-        chunkloader = new ChunkLoader(chunkLock, viewDistance, seed, playerChunkPos, loadedChunks);
+        chunkloader =
+                new ChunkLoader(chunkLock, viewDistance, seed, player, tmpPlayerPos, loadedChunks);
         chunkloader.start();
     }
 
@@ -79,11 +83,76 @@ public class World extends Renderer<List<ChunkModel>>{
         this.player = player;
     }
 
-   /* private int getSeed() {
-        return mg.getSeed();
-    }*/
+    public void render() {
 
-  /*  private void putChunk(Chunk chunk) {
+        try {
+            if (chunkLock.tryLock(1, TimeUnit.MILLISECONDS)) {
+                try {
+                    player.getChunkPosition(tmpPlayerPos);
+
+                    chunks.clear();
+                    for (Chunk chunk : loadedChunks.values()) {
+
+                        if (!chunkModels.containsKey(chunk)) {
+                            chunkModels.put(chunk, new ChunkModel(chunk));
+                        }
+                        if (Math.abs(tmpPlayerPos.x - chunk.getX()) <= viewDistance
+                                && Math.abs(tmpPlayerPos.y - chunk.getZ()) <= viewDistance) {
+                            chunks.add(chunkModels.get(chunk));
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    chunkLock.unlock();
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        modelBatch.begin(camera);
+        for (ChunkModel target : chunks) {
+            fl = target.getChunkModelFull();
+            tr = target.getChunkModelTransparent();
+
+            if (isVisible(fl)) {
+                modelBatch.render(fl, environment);
+            }
+            if (tr != null && isVisible(tr)) {
+                modelBatch.render(tr, environment);
+            }
+        }
+
+        modelBatch.end();
+
+        /*   if(!renderInprogress){
+            modelBatch.begin(camera);
+            renderInprogress = true;
+        }
+
+        ChunkModel xtarget = chunks.get(itrator);
+        if (!(chunks.size() == itrator)) {
+            itrator++;
+        }else{
+            //rendering done
+            renderInprogress = false;
+            modelBatch.end();
+            return;
+        }
+        GameObject fl = xtarget.getChunkModelFull();
+        GameObject tr = xtarget.getChunkModelTransparent();
+
+        if (isVisible(fl)) {
+            modelBatch.render(fl, environment);
+        }
+        if (tr != null && isVisible(tr)) {
+            modelBatch.render(tr, environment);
+        }
+        */
+    }
+
+    /*  private void putChunk(Chunk chunk) {
         chunkLock.lock();
         loadedChunks.put(new SimpleVector2(chunk.getX(), chunk.getZ()), chunk);
         chunkLock.unlock();
@@ -91,10 +160,6 @@ public class World extends Renderer<List<ChunkModel>>{
         ChunkModel cm = new ChunkModel(chunk);
         chunkModels.put(chunk, cm);
     }*/
-
-    private static final SimpleVector2 tmpPlayerPos = new SimpleVector2();
-
-    
 
     public Chunk getChunkAt(int x, int z) {
         chunkLock.lock();
@@ -189,8 +254,8 @@ public class World extends Renderer<List<ChunkModel>>{
         chunkloader.reset();*/
     }
 
-    public void cleanUp() {
-       chunkloader.interrupt();
+    public void cleanUpx() {
+        chunkloader.interrupt();
         for (ChunkModel chunk : getLoadedChunkModels()) {
             chunk.getChunkModelFull().model.dispose();
             if (chunk.getChunkModelTransparent() != null) {
@@ -202,45 +267,11 @@ public class World extends Renderer<List<ChunkModel>>{
     @Override
     public void cleanup() {
         modelBatch.dispose();
+        cleanUpx();
     }
 
     @Override
     protected boolean isVisible(final GameObject instance) {
         return super.isVisible(instance);
-    }
-
-    public void render() {
-        chunkLock.lock();
-        player.getChunkPosition(tmpPlayerPos);
-        chunkLock.unlock();
-        playerChunkPos.set(tmpPlayerPos);
-        
-       chunks.clear();
-       chunkLock.lock();
-        for (Chunk chunk : loadedChunks.values()) {
-            if (!chunkModels.containsKey(chunk)) {
-                chunkModels.put(chunk, new ChunkModel(chunk));
-            }
-            if (Math.abs(tmpPlayerPos.x - chunk.getX()) <= viewDistance
-                    && Math.abs(tmpPlayerPos.y - chunk.getZ()) <= viewDistance)
-                chunks.add(chunkModels.get(chunk));
-        }
-        chunkLock.unlock();
-        
-        modelBatch.begin(camera);
-        for (ChunkModel target : chunks) {
-            GameObject fl = target.getChunkModelFull();
-            GameObject tr = target.getChunkModelTransparent();
-
-            if (isVisible(fl)) {
-                modelBatch.render(fl, environment);
-            }
-            if(tr != null && isVisible(tr)){
-                modelBatch.render(tr, environment);
-            }
-            
-        }
-
-        modelBatch.end();
     }
 }

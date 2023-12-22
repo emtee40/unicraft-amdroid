@@ -143,7 +143,7 @@ public class Minecraft implements ApplicationListener {
     @Override
     public void dispose() {
         
-        world.cleanUp();
+        
         hud.dispose();
         controls.clear();
        //@ sky.clear();
