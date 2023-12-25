@@ -11,6 +11,7 @@ import com.rk.unicraft.world.generator.MapGenerator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -33,7 +34,8 @@ public class ChunkLoader extends Thread {
     // public static volatile boolean pcp = false;
     int x, z;
     private Player player;
-
+    
+    
     public ChunkLoader(
             Lock chunkLock,
             int viewDistance,
@@ -60,7 +62,6 @@ public class ChunkLoader extends Thread {
             try {
                 if (chunkLock.tryLock(20, TimeUnit.MILLISECONDS)) {
                     try {
-
                         x = playerChunkPos.x;
                         z = playerChunkPos.y;
                     } catch (Exception e) {
@@ -73,6 +74,8 @@ public class ChunkLoader extends Thread {
                 e.printStackTrace();
             }
             genChunksAround(x, z);
+            
+            
         }
     }
 
@@ -85,17 +88,16 @@ public class ChunkLoader extends Thread {
             for (int j = start + z; j < end + z; j++) {
                 tmp.x = i;
                 tmp.y = j;
-                
 
                 chunkLock.lock();
                 if (loadedChunks.get(tmp) == null) {
-                   loadedChunks.put(tmp, new Chunk(mg, i, j));
+                    loadedChunks.put(tmp, new Chunk(mg, i, j));
                 }
                 chunkLock.unlock();
             }
         }
     }
-
+    
     private void genStartingChunks() {
 
         int sz = 3;

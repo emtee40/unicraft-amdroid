@@ -17,25 +17,27 @@ import java.util.Map;
 
 import static com.rk.unicraft.world.chunk.Chunk.CHUNK_HEIGHT;
 import static com.rk.unicraft.world.chunk.Chunk.CHUNK_SIZE;
-
+import static com.rk.unicraft.world.World.ta;
+import static com.rk.unicraft.world.World.meshBuilder;
 public class ChunkCoverGenerator {
 
-    private static final MeshBuilder meshBuilder = new MeshBuilder();
+    //private static final MeshBuilder meshBuilder = new MeshBuilder();
 
     private final MeshPartBuilder.VertexInfo v1 = new MeshPartBuilder.VertexInfo();
     private final MeshPartBuilder.VertexInfo v2 = new MeshPartBuilder.VertexInfo();
     private final MeshPartBuilder.VertexInfo v3 = new MeshPartBuilder.VertexInfo();
     private final MeshPartBuilder.VertexInfo v4 = new MeshPartBuilder.VertexInfo();
-    private final TextureAtlas ta = new TextureAtlas(4, 4);
+   // private final TextureAtlas ta = new TextureAtlas(4, 4);
 
-
+    private Map<Block, List<Integer>> blocknface;
+    private float[][] uvs;
     public Mesh getChunkMesh(Chunk c, boolean isTransparentMode) {
         meshBuilder.begin(VertexAttributes.Usage.Position
                 | VertexAttributes.Usage.Normal
                 | VertexAttributes.Usage.TextureCoordinates, GL20.GL_TRIANGLES);
 
 
-        Map<Block, List<Integer>> blocknface;
+        
 
         if(!isTransparentMode)
             blocknface = getFullBlocksWithTransparentFaces(c);
@@ -52,7 +54,7 @@ public class ChunkCoverGenerator {
             int y = entry.getKey().getPos().y;
             int z = entry.getKey().getPos().z;
 
-            float[][] uvs;
+            
 
 
             //In Chunk-Koordinaten konvertieren

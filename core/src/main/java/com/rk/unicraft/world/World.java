@@ -12,6 +12,21 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import java.util.List;
+import com.rk.unicraft.texture.TextureAtlas;
+import com.rk.unicraft.world.World;
+import com.rk.unicraft.world.block.Block;
+import com.rk.unicraft.world.block.Blocks;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import com.badlogic.gdx.Gdx;
 import java.util.concurrent.TimeUnit;
 import com.rk.unicraft.world.block.Block;
@@ -20,6 +35,7 @@ import com.rk.unicraft.world.chunk.ChunkModel;
 import com.badlogic.gdx.math.Vector3;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -30,38 +46,108 @@ import static com.rk.unicraft.world.chunk.Chunk.CHUNK_SIZE;
 
 @SuppressWarnings("unused")
 public class World extends Renderer<List<ChunkModel>> {
-    // init
     private static World world;
-    private int viewDistance; // In chunks
+    private final byte viewDistance = 6; // In chunks
     private Player player;
-
     private ChunkLoader chunkloader;
     public static Lock chunkLock;
-    // private SimpleVector2 playerChunkPos;
     public List<ChunkModel> chunks;
-    private HashMap<SimpleVector2, Chunk> loadedChunks;
+    private LinkedHashMap<SimpleVector2, Chunk> loadedChunks;
     private HashMap<Chunk, ChunkModel> chunkModels;
     private final ModelBatch modelBatch;
     private final Environment environment;
     private final SimpleVector2 tmpPlayerPos = new SimpleVector2();
-    private boolean islogged = false;
-    GameObject fl,tr;
-
-    // int FPSitrator = 0;
+    private GameObject fl, tr;
+    
+    
+    
+    public static final MeshBuilder meshBuilder = new MeshBuilder();
+    public static final MeshPartBuilder.VertexInfo v1 = new MeshPartBuilder.VertexInfo();
+    public static final MeshPartBuilder.VertexInfo v2 = new MeshPartBuilder.VertexInfo();
+    public static final MeshPartBuilder.VertexInfo v3 = new MeshPartBuilder.VertexInfo();
+    public static final MeshPartBuilder.VertexInfo v4 = new MeshPartBuilder.VertexInfo();
+    public static final TextureAtlas ta = new TextureAtlas(4, 4);
+    
+    
 
     public World(ModelBatch modelBatch, Environment environment, Camera camera, int seed) {
         super(camera);
         this.modelBatch = modelBatch;
         this.environment = environment;
-        loadedChunks = new HashMap<>();
+        loadedChunks = new LinkedHashMap<>();
         chunkModels = new HashMap<>();
         chunkLock = new ReentrantLock();
-        // playerChunkPos = tmpPlayerPos;
-        viewDistance = 4;
         chunks = new LinkedList<>();
         chunkloader =
                 new ChunkLoader(chunkLock, viewDistance, seed, player, tmpPlayerPos, loadedChunks);
         chunkloader.start();
+    }
+
+    short chunksAdded = 0;
+    final byte maxChunkUpdatesPerFrame = 2;
+    ChunkModel cmdl;
+    boolean a, b;
+
+    public void render() {
+
+        try {
+            if (chunkLock.tryLock(0, TimeUnit.MILLISECONDS)) {
+                try {
+                    player.getChunkPosition(tmpPlayerPos);
+
+                    for (Chunk chunk : loadedChunks.values()) {
+
+                        if (!chunkModels.containsKey(chunk)) {
+                            chunkModels.put(chunk, new ChunkModel(chunk));
+                            chunksAdded++;
+                        }
+
+                        cmdl = chunkModels.get(chunk);
+                        a = Math.abs(tmpPlayerPos.x - chunk.getX()) <= viewDistance;
+                        b = Math.abs(tmpPlayerPos.y - chunk.getZ()) <= viewDistance;
+
+                        if (a && b && cmdl != null && !chunks.contains(cmdl)) {
+                            chunks.add(cmdl);
+                        }
+
+                        if (!(a && b)) {
+                            chunks.remove(cmdl);
+                        }
+                        if (chunksAdded >= maxChunkUpdatesPerFrame) {
+                            chunksAdded = 0;
+                            break;
+                        }
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    chunkLock.unlock();
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        renderChunks();
+    }
+
+    private void renderChunks() {
+        modelBatch.begin(camera);
+        for (ChunkModel target : chunks) {
+
+            fl = target.getChunkModelFull();
+            tr = target.getChunkModelTransparent();
+
+            if (isVisible(fl)) {
+                modelBatch.render(fl, environment);
+            }
+            if (tr != null && isVisible(tr)) {
+                modelBatch.render(tr, environment);
+            }
+        }
+
+        modelBatch.end();
     }
 
     public static synchronized World getInstance() {
@@ -75,81 +161,8 @@ public class World extends Renderer<List<ChunkModel>> {
         return world;
     }
 
-    /*  public MapGenerator getMapGenerator() {
-        return mg;
-    }*/
-
     public void setPlayer(Player player) {
         this.player = player;
-    }
-
-    public void render() {
-
-        try {
-            if (chunkLock.tryLock(1, TimeUnit.MILLISECONDS)) {
-                try {
-                    player.getChunkPosition(tmpPlayerPos);
-
-                    chunks.clear();
-                    for (Chunk chunk : loadedChunks.values()) {
-
-                        if (!chunkModels.containsKey(chunk)) {
-                            chunkModels.put(chunk, new ChunkModel(chunk));
-                        }
-                        if (Math.abs(tmpPlayerPos.x - chunk.getX()) <= viewDistance
-                                && Math.abs(tmpPlayerPos.y - chunk.getZ()) <= viewDistance) {
-                            chunks.add(chunkModels.get(chunk));
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    chunkLock.unlock();
-                }
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        modelBatch.begin(camera);
-        for (ChunkModel target : chunks) {
-            fl = target.getChunkModelFull();
-            tr = target.getChunkModelTransparent();
-
-            if (isVisible(fl)) {
-                modelBatch.render(fl, environment);
-            }
-            if (tr != null && isVisible(tr)) {
-                modelBatch.render(tr, environment);
-            }
-        }
-
-        modelBatch.end();
-
-        /*   if(!renderInprogress){
-            modelBatch.begin(camera);
-            renderInprogress = true;
-        }
-
-        ChunkModel xtarget = chunks.get(itrator);
-        if (!(chunks.size() == itrator)) {
-            itrator++;
-        }else{
-            //rendering done
-            renderInprogress = false;
-            modelBatch.end();
-            return;
-        }
-        GameObject fl = xtarget.getChunkModelFull();
-        GameObject tr = xtarget.getChunkModelTransparent();
-
-        if (isVisible(fl)) {
-            modelBatch.render(fl, environment);
-        }
-        if (tr != null && isVisible(tr)) {
-            modelBatch.render(tr, environment);
-        }
-        */
     }
 
     /*  private void putChunk(Chunk chunk) {
