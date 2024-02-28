@@ -1,3 +1,6 @@
-##UniCraft
+
+# UniCraft
+
 UniCraft is a Minecraft clone
-written in java with libgdx
+Written in java with libgdx
+
